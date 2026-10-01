@@ -1,3 +1,39 @@
+# Medusa.js 2.0 + Paystack checkout
+
+A Medusa.js 2.0 store (backend + Next.js storefront) with **Paystack** added as a payment option at checkout, alongside Stripe.
+
+Built on the open-source [medusajs-2.0-for-railway-boilerplate](https://github.com/rpuls/medusajs-2.0-for-railway-boilerplate). The Paystack payment provider on the backend is [`@alexasomba/medusa-paystack-plugin-v2`](https://www.npmjs.com/package/@alexasomba/medusa-paystack-plugin-v2). **My work** is wiring that provider into the backend and building the storefront checkout flow around it.
+
+## What I built
+
+- **Backend config** (`backend/medusa-config.js`): registers the Paystack provider when `PAYSTACK_SECRET_KEY` is set, so Stripe and Paystack can run side by side.
+- **Payment session hook** (`storefront/src/hooks/use-paystack-session.tsx`): creates or refreshes the Paystack payment session on the cart's payment collection, and works out when the session is ready (authorization URL or access code present, not expired or completed).
+- **Paystack checkout component** (`storefront/src/components/PaystackPayment.tsx`): opens the Paystack inline popup with `resumeTransaction(access_code)`, then reports success (with the transaction reference), cancellation, or failure, including a clear message when a session has expired.
+- **Checkout integration** (`storefront/src/modules/checkout/components/payment/` and `payment-button/`): shows Paystack in the payment step and completes the order after a successful payment.
+
+## Payment flow
+
+1. Customer picks Paystack in checkout. The storefront creates a payment session (`pp_paystack_paystack`) with the customer's email.
+2. The backend provider initializes a Paystack transaction and returns an `access_code`.
+3. The storefront opens the Paystack popup for that transaction.
+4. On success, the storefront completes the cart and places the order.
+
+## Setup
+
+Backend `.env`:
+
+```
+PAYSTACK_SECRET_KEY=sk_test_...
+PAYSTACK_PUBLIC_KEY=pk_test_...
+```
+
+Then follow the boilerplate instructions below to run the backend and storefront.
+
+---
+
+<details>
+<summary>Original boilerplate README</summary>
+
 <p align="center">
   <a href="https://www.medusajs.com">
     <picture>
@@ -101,3 +137,6 @@ Rename `.env.local.template` ->  `.env.local`
     </div>
   </a>
 </p>
+
+
+</details>
